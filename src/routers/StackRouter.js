@@ -53,6 +53,9 @@ export default (
 
   const initialRouteName = stackConfig.initialRouteName || routeNames[0];
 
+  // If stateName is not explicitly set, just use the initialRouteName as default
+  const stateName = stackConfig.stateName || initialRouteName;
+
   const initialChildRouter = childRouters[initialRouteName];
   const paths = stackConfig.paths || {};
 
@@ -133,6 +136,7 @@ export default (
         };
         // eslint-disable-next-line no-param-reassign
         state = {
+          stateName,
           index: 0,
           routes: [route],
         };
@@ -241,6 +245,12 @@ export default (
       }
 
       if (action.type === NavigationActions.RESET) {
+        // Prevent the RESET action from propagating on child components if
+        // the stateName param is set and just return state as is
+        if (action.stateName && action.stateName !== state.stateName) {
+          return state;
+        }
+
         const resetAction: NavigationResetAction = action;
 
         return {
